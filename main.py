@@ -1,17 +1,20 @@
-import os
 import pickle
 import cv2
 import face_recognition
-import cvzone
 from cvzone.FaceMeshModule import FaceMeshDetector
 import numpy as np
 import firebase_admin
-from firebase_admin import credentials
 from firebase_admin import db
 from firebase_admin import storage
 from datetime import datetime, timedelta
-
-cred = credentials.Certificate("accountKey.json")
+import os
+import sys
+from firebase_admin import credentials
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
+    return os.path.join(base_path, relative_path)
+cred = credentials.Certificate(resource_path('accountKey.json'))
 firebase_admin.initialize_app(cred, {
     'databaseURL': "https://attendancesystem-cb9a3-default-rtdb.firebaseio.com/",
     'storageBucket': "attendancesystem-cb9a3.appspot.com"
@@ -27,12 +30,17 @@ if not cap.isOpened():
 cap.set(3, 640)
 cap.set(4, 480)
 imgBackground = cv2.imread('Resources/background.png')
-folderModePath = 'Resources/Modes'
+def resource_path(relative_path):
+
+    base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
+    return os.path.join(base_path, relative_path)
+folderModePath = resource_path('Resources/Modes')
 modePathList = os.listdir(folderModePath)
 imgModeList = [cv2.imread(os.path.join(folderModePath, path)) for path in modePathList]
 idList = [22, 23, 24, 26, 110, 157, 158, 159, 160, 161, 130, 243]
-file = open('encodeFile.p', 'rb')
-encodeListKnown = pickle.load(file)  # Carrega apenas um valor
+file_path = resource_path('encodeFile.p')
+file = open(file_path, 'rb')
+encodeListKnown = pickle.load(file)
 file.close()
 modeType = 0
 counter = 0
@@ -42,20 +50,19 @@ today_date = datetime.now().strftime("%Y-%m-%d")
 last_recognized_time = {}
 
 def identifyUser(encodeCurFrame, encodeListKnown, threshold=0.6):
-    bestMatch = None
-    highestMatchRatio = threshold
+    best_match = None
+    highest_match_ratio = threshold
 
     for encodeFace in encodeCurFrame:
         for userId, userEncodings in encodeListKnown.items():
             matches = face_recognition.compare_faces(userEncodings, encodeFace)
             faceDis = face_recognition.face_distance(userEncodings, encodeFace)
-            matchRatio = np.sum(matches) / len(matches)
+            match_ratio = np.sum(matches) / len(matches)
 
-            if matchRatio > highestMatchRatio:
-                highestMatchRatio = matchRatio
-                bestMatch = (userId, matchRatio, np.mean(faceDis))
-
-    return bestMatch
+            if match_ratio > highest_match_ratio:
+                highest_match_ratio = match_ratio
+                best_match = (userId, match_ratio, np.mean(faceDis))
+    return best_match
 while True:
     success, img = cap.read()
     img, faces = detector.findFaceMesh(img, draw=False)
@@ -90,7 +97,7 @@ while True:
                     blinkCounter += 1
                     print(f'ei tu piscou! ta na piscada {blinkCounter}')
                 employeeInfo = db.reference(f'Employees/{userId}').get()
-            if employeeInfo:
+                if employeeInfo:
                     employeeInfo = db.reference(f'Employees/{userId}').get()
                     print("aqui esta apenas informando a employeeInfo")
                     print(employeeInfo)
@@ -148,16 +155,11 @@ while True:
                       except (NameError, KeyError) as e:
                         print("Erro:", e)
                         modeType = 4
-                    counter += 1
-                    if counter >= 20:
-                        counter = 0
-                        modeType = 0
-                        employeeInfo = []
-                        imgEmployee = []
-                        imgBackground[44:44 + 634, 808:808 + 414] = imgModeList[modeType]
+
     else:
         modeType = 0
         counter = 0
     cv2.imshow("Webcam", img)
     cv2.imshow("Face Attendence", imgBackground)
     cv2.waitKey(1)
+
