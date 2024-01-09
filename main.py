@@ -1,4 +1,6 @@
 import pickle
+import time
+
 import cv2
 import face_recognition
 from cvzone.FaceMeshModule import FaceMeshDetector
@@ -10,8 +12,9 @@ from datetime import datetime, timedelta
 import os
 import sys
 from firebase_admin import credentials
+import threading
+from queue import Queue
 def resource_path(relative_path):
-    """ Get absolute path to resource, works for dev and for PyInstaller """
     base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
     return os.path.join(base_path, relative_path)
 cred = credentials.Certificate(resource_path('accountKey.json'))
@@ -48,7 +51,30 @@ point_id = -1
 imgEmployee = []
 today_date = datetime.now().strftime("%Y-%m-%d")
 last_recognized_time = {}
-
+def fetch_data(userId, result_queue):
+    global modeType  # Se modeType é usado fora dessa função
+    employeeInfo = db.reference(f'Employees/{userId}').get()
+    if employeeInfo:
+        print("aqui esta apenas informando a employeeInfo")
+        print(employeeInfo)
+        # Construir o caminho do blob
+        blob_path = f"Images/{userId}/image1.jpeg"  # Usando 'image1.jpeg' como exemplo
+        blob = bucket.get_blob(blob_path)
+        if blob:
+            print("consegui carregar o blob!")
+            array = np.frombuffer(blob.download_as_string(), np.uint8)
+            imgEmployee = cv2.imdecode(array, cv2.IMREAD_COLOR)
+            if imgEmployee is None or not hasattr(imgEmployee, 'shape'):
+                print("Erro na decodificacao")
+                imgEmployee = None
+            datetimeObject = datetime.strptime(employeeInfo['last_attendance_time'], "%Y-%m-%d %H:%M:%S")
+            secondsElapsed = (datetime.now() - datetimeObject).total_seconds()
+            result_queue.put((datetimeObject, secondsElapsed, employeeInfo, imgEmployee))
+            print("se passaram: ", secondsElapsed, "segundos")
+            modeType = 0
+        else:
+            print("Erro na porra do blobbloblbob")
+            imgEmployee = None
 def identifyUser(encodeCurFrame, encodeListKnown, threshold=0.6):
     best_match = None
     highest_match_ratio = threshold
@@ -64,6 +90,7 @@ def identifyUser(encodeCurFrame, encodeListKnown, threshold=0.6):
                 best_match = (userId, match_ratio, np.mean(faceDis))
     return best_match
 while True:
+    result_queue = Queue()
     success, img = cap.read()
     img, faces = detector.findFaceMesh(img, draw=False)
     if faces:
@@ -84,33 +111,11 @@ while True:
                 print(f"Reconhecido: {userId} com precisão de {matchRatio} e distância média de {avgDistance}")
                 last_recognized_time[userId] = datetime.now()
                 current_time = datetime.now()
-                if faces:
-                    leftUp = face[159]
-                    leftDown = face[23]
-                    leftLeft = face[130]
-                    leftRight = face[243]
-                    lengthVer, _ = detector.findDistance(leftUp, leftDown)
-                    lengthHor, _ = detector.findDistance(leftLeft, leftRight)
-                    ratio = int((lengthVer / lengthHor) * 100)
-                    threshold_lengthVer = 10
-                if ratio < 30 and lengthVer > threshold_lengthVer:
-                    blinkCounter += 1
-                    print(f'ei tu piscou! ta na piscada {blinkCounter}')
-                employeeInfo = db.reference(f'Employees/{userId}').get()
-                if employeeInfo:
-                    employeeInfo = db.reference(f'Employees/{userId}').get()
-                    print("aqui esta apenas informando a employeeInfo")
-                    print(employeeInfo)
-                    # Construir o caminho do blob
-                    blob_path = f"Images/{userId}/image1.jpeg"  # Usando 'image1.jpeg' como exemplo
-                    blob = bucket.get_blob(blob_path)
-                    array = np.frombuffer(blob.download_as_string(), np.uint8)
-                    imgEmployee = cv2.imdecode(array, cv2.COLOR_BGRA2BGR)
-                    datetimeObject = datetime.strptime(employeeInfo['last_attendance_time'], "%Y-%m-%d %H:%M:%S")
-                    secondsElapsed = (datetime.now() - datetimeObject).total_seconds()
-                    print("se passaram: ", secondsElapsed, "segundos")
-                    modeType = 0
-                    if secondsElapsed > 46000:
+                data_thread = threading.Thread(target=fetch_data, args=(userId, result_queue))
+                data_thread.start()
+                data_thread.join()
+                datetimeObject, secondsElapsed, employeeInfo, imgEmployee = result_queue.get()
+                if secondsElapsed > 46000:
                         print("entrou no primeiro secondsElapsed")
                         modeType = 1
                         ref = db.reference(f'Employees/{userId}')
@@ -120,7 +125,7 @@ while True:
                         employeeInfo['total_attendance'] = new_datetime.strftime("%Y-%m-%d %H:%M:%S")
                         ref.child('last_attendance_time').set(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
                         secondsElapsed = (datetime.now() - datetimeObject).total_seconds()
-                    elif secondsElapsed > 3600:
+                elif secondsElapsed > 3600:
                         modeType = 4
                         print("entrou no segundo secondsElapsed")
                         employeeRef = db.reference(f'Employees/{userId}')
@@ -131,17 +136,17 @@ while True:
                         exit_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                         dailyRecordRef.update({'exit': exit_time})
                         print("Registro de saída adicionado para hoje.")
-                    else:
+                else:
                         new_datetime = datetimeObject + timedelta(seconds=1)
                         modeType = 2
                         counter = 0
                         imgBackground[44:44 + 634, 808:808 + 414] = imgModeList[modeType]
                         print("entrou no else do ifsecondsElapsed > 50")
-                    if modeType != 4:
+                if modeType != 4:
                         if 10 < counter < 20:
                             modeType = 2
-                    imgBackground[44:44 + 634, 808:808 + 414] = imgModeList[modeType]
-                    if counter <= 10:
+                        imgBackground[44:44 + 634, 808:808 + 414] = imgModeList[modeType]
+                if counter <= 10:
                       try:
                         cv2.putText(imgBackground, str(employeeInfo['role']), (1006, 550),
                                     cv2.FONT_HERSHEY_COMPLEX, 0.5, (255, 255, 255), 1)
@@ -152,10 +157,10 @@ while True:
                         cv2.putText(imgBackground, str(employeeInfo['name']), (808 + offset, 445),
                                     cv2.FONT_HERSHEY_COMPLEX, 1, (50, 50, 50), 1)
                         imgBackground[175:175 + 216, 909:909 + 216] = imgEmployee
+                        cv2.imshow("Face Attendence", imgBackground)  # Atualiza a janela com as novas informações
                       except (NameError, KeyError) as e:
                         print("Erro:", e)
                         modeType = 4
-
     else:
         modeType = 0
         counter = 0
