@@ -1,6 +1,4 @@
 import pickle
-import time
-
 import cv2
 import face_recognition
 from cvzone.FaceMeshModule import FaceMeshDetector
@@ -14,6 +12,7 @@ import sys
 from firebase_admin import credentials
 import threading
 from queue import Queue
+import time
 def resource_path(relative_path):
     base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
     return os.path.join(base_path, relative_path)
@@ -115,7 +114,7 @@ while True:
                 data_thread.start()
                 data_thread.join()
                 datetimeObject, secondsElapsed, employeeInfo, imgEmployee = result_queue.get()
-                if secondsElapsed > 46000:
+            if secondsElapsed > 46000:
                         print("entrou no primeiro secondsElapsed")
                         modeType = 1
                         ref = db.reference(f'Employees/{userId}')
@@ -125,7 +124,7 @@ while True:
                         employeeInfo['total_attendance'] = new_datetime.strftime("%Y-%m-%d %H:%M:%S")
                         ref.child('last_attendance_time').set(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
                         secondsElapsed = (datetime.now() - datetimeObject).total_seconds()
-                elif secondsElapsed > 3600:
+            elif secondsElapsed > 3600:
                         modeType = 4
                         print("entrou no segundo secondsElapsed")
                         employeeRef = db.reference(f'Employees/{userId}')
@@ -136,18 +135,19 @@ while True:
                         exit_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                         dailyRecordRef.update({'exit': exit_time})
                         print("Registro de saída adicionado para hoje.")
-                else:
+            else:
                         new_datetime = datetimeObject + timedelta(seconds=1)
                         modeType = 2
                         counter = 0
                         imgBackground[44:44 + 634, 808:808 + 414] = imgModeList[modeType]
-                        print("entrou no else do ifsecondsElapsed > 50")
-                if modeType != 4:
+                        print("entrou no else das condicoes de secondsElapsed")
+            if modeType != 4:
                         if 10 < counter < 20:
                             modeType = 2
                         imgBackground[44:44 + 634, 808:808 + 414] = imgModeList[modeType]
-                if counter <= 10:
-                      try:
+            if counter <= 10:
+                    try:
+                        print("ta indo colocar a imagem")
                         cv2.putText(imgBackground, str(employeeInfo['role']), (1006, 550),
                                     cv2.FONT_HERSHEY_COMPLEX, 0.5, (255, 255, 255), 1)
                         cv2.putText(imgBackground, str(employeeInfo['name']), (1006, 493),
@@ -157,8 +157,8 @@ while True:
                         cv2.putText(imgBackground, str(employeeInfo['name']), (808 + offset, 445),
                                     cv2.FONT_HERSHEY_COMPLEX, 1, (50, 50, 50), 1)
                         imgBackground[175:175 + 216, 909:909 + 216] = imgEmployee
-                        cv2.imshow("Face Attendence", imgBackground)  # Atualiza a janela com as novas informações
-                      except (NameError, KeyError) as e:
+                        print("mana ja passou a imagem")
+                    except (NameError, KeyError) as e:
                         print("Erro:", e)
                         modeType = 4
     else:
@@ -166,5 +166,5 @@ while True:
         counter = 0
     cv2.imshow("Webcam", img)
     cv2.imshow("Face Attendence", imgBackground)
-    cv2.waitKey(1)
+    cv2.waitKey(10)
 
