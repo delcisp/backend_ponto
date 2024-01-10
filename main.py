@@ -12,7 +12,6 @@ import sys
 from firebase_admin import credentials
 import threading
 from queue import Queue
-import time
 def resource_path(relative_path):
     base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
     return os.path.join(base_path, relative_path)
@@ -33,7 +32,6 @@ cap.set(3, 640)
 cap.set(4, 480)
 imgBackground = cv2.imread('Resources/background.png')
 def resource_path(relative_path):
-
     base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
     return os.path.join(base_path, relative_path)
 folderModePath = resource_path('Resources/Modes')
@@ -51,12 +49,11 @@ imgEmployee = []
 today_date = datetime.now().strftime("%Y-%m-%d")
 last_recognized_time = {}
 def fetch_data(userId, result_queue):
-    global modeType  # Se modeType é usado fora dessa função
+    global modeType
     employeeInfo = db.reference(f'Employees/{userId}').get()
     if employeeInfo:
         print("aqui esta apenas informando a employeeInfo")
         print(employeeInfo)
-        # Construir o caminho do blob
         blob_path = f"Images/{userId}/image1.jpeg"  # Usando 'image1.jpeg' como exemplo
         blob = bucket.get_blob(blob_path)
         if blob:
@@ -74,16 +71,14 @@ def fetch_data(userId, result_queue):
         else:
             print("Erro na porra do blobbloblbob")
             imgEmployee = None
-def identifyUser(encodeCurFrame, encodeListKnown, threshold=0.6):
+def identifyUser(encodeCurFrame, encodeListKnown, threshold=0.8):
     best_match = None
     highest_match_ratio = threshold
-
     for encodeFace in encodeCurFrame:
         for userId, userEncodings in encodeListKnown.items():
             matches = face_recognition.compare_faces(userEncodings, encodeFace)
             faceDis = face_recognition.face_distance(userEncodings, encodeFace)
             match_ratio = np.sum(matches) / len(matches)
-
             if match_ratio > highest_match_ratio:
                 highest_match_ratio = match_ratio
                 best_match = (userId, match_ratio, np.mean(faceDis))
@@ -106,7 +101,7 @@ while True:
         bestMatch = identifyUser(encodeCurFrame, encodeListKnown)
         if bestMatch:
             userId, matchRatio, avgDistance = bestMatch
-            if userId not in last_recognized_time or (datetime.now() - last_recognized_time[userId]).total_seconds() > 50:
+            if userId not in last_recognized_time or (datetime.now() - last_recognized_time[userId]).total_seconds() > 10:
                 print(f"Reconhecido: {userId} com precisão de {matchRatio} e distância média de {avgDistance}")
                 last_recognized_time[userId] = datetime.now()
                 current_time = datetime.now()
@@ -114,7 +109,7 @@ while True:
                 data_thread.start()
                 data_thread.join()
                 datetimeObject, secondsElapsed, employeeInfo, imgEmployee = result_queue.get()
-            if secondsElapsed > 46000:
+                if secondsElapsed > 46000:
                         print("entrou no primeiro secondsElapsed")
                         modeType = 1
                         ref = db.reference(f'Employees/{userId}')
@@ -124,7 +119,7 @@ while True:
                         employeeInfo['total_attendance'] = new_datetime.strftime("%Y-%m-%d %H:%M:%S")
                         ref.child('last_attendance_time').set(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
                         secondsElapsed = (datetime.now() - datetimeObject).total_seconds()
-            elif secondsElapsed > 3600:
+                elif secondsElapsed > 3600:
                         modeType = 4
                         print("entrou no segundo secondsElapsed")
                         employeeRef = db.reference(f'Employees/{userId}')
@@ -135,17 +130,17 @@ while True:
                         exit_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                         dailyRecordRef.update({'exit': exit_time})
                         print("Registro de saída adicionado para hoje.")
-            else:
+                else:
                         new_datetime = datetimeObject + timedelta(seconds=1)
                         modeType = 2
                         counter = 0
                         imgBackground[44:44 + 634, 808:808 + 414] = imgModeList[modeType]
                         print("entrou no else das condicoes de secondsElapsed")
-            if modeType != 4:
+                if modeType != 4:
                         if 10 < counter < 20:
                             modeType = 2
                         imgBackground[44:44 + 634, 808:808 + 414] = imgModeList[modeType]
-            if counter <= 10:
+                if counter <= 10:
                     try:
                         print("ta indo colocar a imagem")
                         cv2.putText(imgBackground, str(employeeInfo['role']), (1006, 550),
@@ -161,6 +156,7 @@ while True:
                     except (NameError, KeyError) as e:
                         print("Erro:", e)
                         modeType = 4
+                modeType = 2
     else:
         modeType = 0
         counter = 0
