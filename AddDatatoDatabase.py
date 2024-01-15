@@ -50,6 +50,19 @@ data = {
             }
         }
     },
+    "000025": {
+        "name": "Abelardo Passos",
+        "role": "Nosso Sindico",
+        "orgao": "SEAD",
+        "last_attendance_time": "2023-11-05 00:54:34",
+        "gone_in": "2023-11-05 00:54:34",
+        "daily_records": {
+            "2023-11-30": {
+                "entrance": "2023-11-30 09:15:20",
+                "exit": "2023-11-30 17:45:00"
+            }
+        }
+    },
     "00026": {
         "name": "Paulo Victor",
         "role": "Chefe de departamento",

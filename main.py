@@ -42,7 +42,7 @@ file_path = resource_path('encodeFile.p')
 file = open(file_path, 'rb')
 encodeListKnown = pickle.load(file)
 file.close()
-modeType = 0
+modeType = 1
 counter = 0
 point_id = -1
 imgEmployee = []
@@ -69,7 +69,6 @@ def fetch_data(userId, result_queue):
                 secondsElapsed = (datetime.now() - datetimeObject).total_seconds()
                 result_queue.put((datetimeObject, secondsElapsed, employeeInfo, imgEmployee))
                 print("se passaram: ", secondsElapsed, "segundos")
-                modeType = 0
             else:
                 print("Erro na porra do blobbloblbob")
                 imgEmployee = None
@@ -90,22 +89,18 @@ def identifyUser(encodeCurFrame, encodeListKnown, threshold=0.8):
                 highest_match_ratio = match_ratio
                 best_match = (userId, match_ratio, np.mean(faceDis))
     return best_match
-
 def draw_button(image, button_text, button_pos, button_size, text_color=(255, 255, 255), button_color=(203, 100, 34)):
     x, y = button_pos
     w, h = button_size
     cv2.rectangle(image, (x, y), (x + w, y + h), button_color, -1)
-
     # Calculando o tamanho do texto
     text_size = cv2.getTextSize(button_text, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 2)[0]
     text_x = x + (w - text_size[0]) // 2  # Centraliza o texto
     text_y = y + (h + text_size[1]) // 2  # Centraliza o texto
-
     cv2.putText(image, button_text, (text_x, text_y), cv2.FONT_HERSHEY_SIMPLEX, 0.7, text_color, 2)
     return (x, y, x + w, y + h)
-
 def on_mouse_click(event, x, y, flags, params):
-    global start_recognition, confirm_clicked
+    global start_recognition, confirm_clicked, ok_clicked, modeType, imgBackground
     if event == cv2.EVENT_LBUTTONDOWN:
         if button_coords[0] <= x <= button_coords[2] and button_coords[1] <= y <= button_coords[3]:
             print("Botão Iniciar clicado!")
@@ -113,8 +108,12 @@ def on_mouse_click(event, x, y, flags, params):
         elif confirm_button_coords[0] <= x <= confirm_button_coords[2] and confirm_button_coords[1] <= y <= confirm_button_coords[3]:
             print("Botão Confirmar clicado!")
             confirm_clicked = True
+        elif ok_button_coords[0] <= x <= ok_button_coords[2] and ok_button_coords[1] <= y <= ok_button_coords[3]:
+            ok_clicked = True
+            print("botao OK clicado!")
 start_recognition = False
 confirm_clicked = False
+ok_clicked = False
 cv2.namedWindow("Face Attendence")
 cv2.setMouseCallback("Face Attendence", on_mouse_click)
 while True:
@@ -153,37 +152,6 @@ while True:
                     data_thread.start()
                     data_thread.join()
                     datetimeObject, secondsElapsed, employeeInfo, imgEmployee = result_queue.get()
-                    if secondsElapsed > 46000:
-                            print("entrou no primeiro secondsElapsed")
-                            modeType = 1
-                            ref = db.reference(f'Employees/{userId}')
-                            entrance_time = current_time.strftime("%Y-%m-%d %H:%M:%S")
-                            db.reference(f'/Employees/{userId}/daily_records/{today_date}/entrance').set(entrance_time)
-                            new_datetime = datetimeObject + timedelta(seconds=1)
-                            employeeInfo['total_attendance'] = new_datetime.strftime("%Y-%m-%d %H:%M:%S")
-                            ref.child('last_attendance_time').set(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-                            secondsElapsed = (datetime.now() - datetimeObject).total_seconds()
-                    elif secondsElapsed > 3600:
-                            modeType = 4
-                            print("entrou no segundo secondsElapsed")
-                            employeeRef = db.reference(f'Employees/{userId}')
-                            new_datetime = datetimeObject + timedelta(seconds=1)
-                            total_attendance = new_datetime.strftime("%Y-%m-%d %H:%M:%S")
-                            employeeRef.update({'total_attendance': total_attendance, 'gone_in': datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
-                            dailyRecordRef = db.reference(f'Employees/{userId}/daily_records/{today_date}')
-                            exit_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                            dailyRecordRef.update({'exit': exit_time})
-                            print("Registro de saída adicionado para hoje.")
-                    else:
-                            new_datetime = datetimeObject + timedelta(seconds=1)
-                            modeType = 2
-                            counter = 0
-                            imgBackground[44:44 + 634, 808:808 + 414] = imgModeList[modeType]
-                            print("entrou no else das condicoes de secondsElapsed")
-                    if modeType != 4:
-                            if 10 < counter < 20:
-                                modeType = 2
-                            imgBackground[44:44 + 634, 808:808 + 414] = imgModeList[modeType]
                     if counter <= 10:
                         try:
                             print("ta indo colocar a imagem")
@@ -197,19 +165,69 @@ while True:
                                     cv2.FONT_HERSHEY_COMPLEX, 1, (50, 50, 50), 1)
                             imgBackground[175:175 + 216, 909:909 + 216] = imgEmployee
                             print("mana ja passou a imagem")
-                            confirm_button_coords = draw_button(imgBackground, "CONFIRMAR", (920, 600), (250, 75))
+                            confirm_button_coords = draw_button(imgBackground, "CONFIRMAR", (1040, 600), (150, 50))
+                            doagain_button_coords = draw_button(imgBackground, "REINICIAR", (820, 600), (150, 50))
                         except (NameError, KeyError) as e:
                             print("Erro:", e)
                             modeType = 4
+                            print("sabe deus pq mas ta entrando aqui na e")
                     else:
-                        modeType = 2
+                        modeType = 1
                     cv2.imshow("Face Attendence", imgBackground)
+                    ##aqui a separacao de fazer algo ou só mostrar algo, a separacao do botao CONFIRMAR
                     while True:
                         key = cv2.waitKey(1) & 0xFF
                         if key == ord('q') or confirm_clicked:
-                            confirm_clicked = False
-                            break
+                            if secondsElapsed > 46000:
+                                cv2.imshow("Face Attendence", imgBackground)
+                                print("entrou no primeiro secondsElapsed")
+                                ref = db.reference(f'Employees/{userId}')
+                                entrance_time = current_time.strftime("%Y-%m-%d %H:%M:%S")
+                                db.reference(f'/Employees/{userId}/daily_records/{today_date}/entrance').set(entrance_time)
+                                new_datetime = datetimeObject + timedelta(seconds=1)
+                                employeeInfo['total_attendance'] = new_datetime.strftime("%Y-%m-%d %H:%M:%S")
+                                ref.child('last_attendance_time').set(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+                                secondsElapsed = (datetime.now() - datetimeObject).total_seconds()
+                                imgBackground[44:44 + 634, 808:808 + 414] = imgModeList[modeType]
+                                modeType = 2
+                                ok_button_coords = draw_button(imgBackground, "OK", (920, 600), (200, 50))
+                                if ok_clicked:
+                                    print("entrou no if do ok_button_coords mas nao apareceu o modeType")
+                                    modeType = 1
+                                    break
+                            elif secondsElapsed > 3600:
+                                cv2.imshow("Face Attendence", imgBackground)
+                                print("entrou no segundo secondsElapsed")
+                                employeeRef = db.reference(f'Employees/{userId}')
+                                new_datetime = datetimeObject + timedelta(seconds=1)
+                                total_attendance = new_datetime.strftime("%Y-%m-%d %H:%M:%S")
+                                employeeRef.update({'total_attendance': total_attendance, 'gone_in': datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
+                                dailyRecordRef = db.reference(f'Employees/{userId}/daily_records/{today_date}')
+                                exit_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                                dailyRecordRef.update({'exit': exit_time})
+                                print("Registro de saída adicionado para hoje.")
+                                imgBackground[44:44 + 634, 808:808 + 414] = imgModeList[modeType]
+                                modeType = 4
+                                ok_button_coords = draw_button(imgBackground, "OK", (920, 600), (200, 50))
+                                if ok_clicked:
+                                    print("entrou no if do ok_button_coords mas nao apareceu o modeType")
+                                    modeType = 1
+                                    break
+                            else:
+                                cv2.imshow("Face Attendence", imgBackground)
+                                employeeRef = db.reference(f'Employees/{userId}')
+                                new_datetime = datetimeObject + timedelta(seconds=1)
+                                imgBackground[44:44 + 634, 808:808 + 414] = imgModeList[modeType]
+                                modeType = 3
+                                print("entrou no else das condicoes de secondsElapsed")
+                                ok_button_coords = draw_button(imgBackground, "OK", (920, 600), (200, 50))
+                                if ok_clicked:
+                                    print("entrou no if do ok_button_coords")
+                                    modeType = 1
+                                    break
                     start_recognition = False
+                    confirm_clicked = False
+                    ok_clicked = False
     else:
         cv2.imshow("Face Attendence", imgBackground)
     key = cv2.waitKey(1) & 0xFF
