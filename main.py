@@ -100,7 +100,7 @@ def draw_button(image, button_text, button_pos, button_size, text_color=(255, 25
     cv2.putText(image, button_text, (text_x, text_y), cv2.FONT_HERSHEY_SIMPLEX, 0.7, text_color, 2)
     return (x, y, x + w, y + h)
 def on_mouse_click(event, x, y, flags, params):
-    global start_recognition, confirm_clicked, ok_clicked, modeType, imgBackground
+    global start_recognition, confirm_clicked, ok_clicked, reload_clicked, modeType, imgBackground
     if event == cv2.EVENT_LBUTTONDOWN:
         if button_coords[0] <= x <= button_coords[2] and button_coords[1] <= y <= button_coords[3]:
             print("Botão Iniciar clicado!")
@@ -109,11 +109,16 @@ def on_mouse_click(event, x, y, flags, params):
             print("Botão Confirmar clicado!")
             confirm_clicked = True
         elif ok_button_coords[0] <= x <= ok_button_coords[2] and ok_button_coords[1] <= y <= ok_button_coords[3]:
-            ok_clicked = True
             print("botao OK clicado!")
+            ok_clicked = True
+        elif reload_button_coords[0] <= x <= reload_button_coords[2] and reload_button_coords[1] <= y <= reload_button_coords[3]:
+            reload_clicked = True
+
+
 start_recognition = False
 confirm_clicked = False
 ok_clicked = False
+reload_clicked = False
 cv2.namedWindow("Face Attendence")
 cv2.setMouseCallback("Face Attendence", on_mouse_click)
 while True:
@@ -155,9 +160,9 @@ while True:
                     if counter <= 10:
                         try:
                             print("ta indo colocar a imagem")
-                            cv2.putText(imgBackground, str(employeeInfo['role']), (1006, 550),
+                            cv2.putText(imgBackground, str(employeeInfo['role']), (965, 555),
                                     cv2.FONT_HERSHEY_COMPLEX, 0.5, (255, 255, 255), 1)
-                            cv2.putText(imgBackground, str(employeeInfo['name']), (1006, 493),
+                            cv2.putText(imgBackground, str(employeeInfo['name']), (965, 493),
                                     cv2.FONT_HERSHEY_COMPLEX, 0.5, (255, 255, 255), 1)
                             (w, h), _ = cv2.getTextSize(employeeInfo['name'], cv2.FONT_HERSHEY_COMPLEX, 1, 1)
                             offset = (414 - w) // 2
@@ -166,7 +171,7 @@ while True:
                             imgBackground[175:175 + 216, 909:909 + 216] = imgEmployee
                             print("mana ja passou a imagem")
                             confirm_button_coords = draw_button(imgBackground, "CONFIRMAR", (1040, 600), (150, 50))
-                            doagain_button_coords = draw_button(imgBackground, "REINICIAR", (820, 600), (150, 50))
+                            reload_button_coords = draw_button(imgBackground, "REINICIAR", (820, 600), (150, 50))
                         except (NameError, KeyError) as e:
                             print("Erro:", e)
                             modeType = 4
@@ -175,6 +180,10 @@ while True:
                         modeType = 1
                     cv2.imshow("Face Attendence", imgBackground)
                     ##aqui a separacao de fazer algo ou só mostrar algo, a separacao do botao CONFIRMAR
+                    while True:
+                        key = cv2.waitKey(1) & 0xFF
+                        if key == ord('q') or reload_clicked:
+                            break
                     while True:
                         key = cv2.waitKey(1) & 0xFF
                         if key == ord('q') or confirm_clicked:
