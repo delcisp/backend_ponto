@@ -100,8 +100,11 @@ def draw_button(image, button_text, button_pos, button_size, text_color=(255, 25
     cv2.putText(image, button_text, (text_x, text_y), cv2.FONT_HERSHEY_SIMPLEX, 0.7, text_color, 2)
     return (x, y, x + w, y + h)
 def on_mouse_click(event, x, y, flags, params):
-    global start_recognition, confirm_clicked, ok_clicked, reload_clicked, modeType, imgBackground
+    global start_recognition, confirm_clicked, ok_clicked, reload_clicked,  modeType, imgBackground
     if event == cv2.EVENT_LBUTTONDOWN:
+        if 'reload_button_coords' in globals() and reload_button_coords[0] <= x <= reload_button_coords[2] and reload_button_coords[1] <= y <= reload_button_coords[3]:
+            reload_clicked = True
+            print("pegou obotaoaoaoaoaoa")
         if button_coords[0] <= x <= button_coords[2] and button_coords[1] <= y <= button_coords[3]:
             print("Botão Iniciar clicado!")
             start_recognition = True
@@ -109,12 +112,8 @@ def on_mouse_click(event, x, y, flags, params):
             print("Botão Confirmar clicado!")
             confirm_clicked = True
         elif ok_button_coords[0] <= x <= ok_button_coords[2] and ok_button_coords[1] <= y <= ok_button_coords[3]:
-            print("botao OK clicado!")
             ok_clicked = True
-        elif reload_button_coords[0] <= x <= reload_button_coords[2] and reload_button_coords[1] <= y <= reload_button_coords[3]:
-            reload_clicked = True
-
-
+            print("botao OK clicado!")
 start_recognition = False
 confirm_clicked = False
 ok_clicked = False
@@ -179,14 +178,12 @@ while True:
                     else:
                         modeType = 1
                     cv2.imshow("Face Attendence", imgBackground)
-                    ##aqui a separacao de fazer algo ou só mostrar algo, a separacao do botao CONFIRMAR
                     while True:
                         key = cv2.waitKey(1) & 0xFF
-                        if key == ord('q') or reload_clicked:
+                        if reload_clicked:
+                            print("ate aqui nos ajudou o senhor")
                             break
-                    while True:
-                        key = cv2.waitKey(1) & 0xFF
-                        if key == ord('q') or confirm_clicked:
+                        if confirm_clicked:
                             if secondsElapsed > 46000:
                                 cv2.imshow("Face Attendence", imgBackground)
                                 print("entrou no primeiro secondsElapsed")
@@ -237,6 +234,7 @@ while True:
                     start_recognition = False
                     confirm_clicked = False
                     ok_clicked = False
+                    reload_clicked = False
     else:
         cv2.imshow("Face Attendence", imgBackground)
     key = cv2.waitKey(1) & 0xFF
@@ -244,6 +242,5 @@ while True:
         break
 cap.release()
 cv2.destroyAllWindows()
-
 
 
