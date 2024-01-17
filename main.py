@@ -235,6 +235,28 @@ while True:
                     confirm_clicked = False
                     ok_clicked = False
                     reload_clicked = False
+            ##ESSE TRECHO DO ELSE DE BEST MATCH TA DANDO ERRO AO TENTAR RODAR VARIAS VEZES O SISTEMA!!!
+            else:
+                start_recognition = False
+                print("finalmente entrou nessa merda")
+                desconhecido_button_coords = draw_button(imgBackground, "DESCONHECIDO", (920, 600), (200, 50))
+                cv2.imshow("Face Attendence", imgBackground)
+                modeType = 5
+                print("terminouuu mas nao mudou o modeType para 5")
+                while True:
+                    key = cv2.waitKey(1) & 0xFF
+                    if key == ord('q'):
+                        break
+                    if desconhecido_clicked:
+                        print("botao clicado")
+                        start_recognition = False
+                        confirm_clicked = False
+                        ok_clicked = False
+                        reload_clicked = False
+                        desconhecido_clicked = False
+                        break
+                    continue
+
     else:
         cv2.imshow("Face Attendence", imgBackground)
     key = cv2.waitKey(1) & 0xFF
@@ -242,5 +264,4 @@ while True:
         break
 cap.release()
 cv2.destroyAllWindows()
-
 
