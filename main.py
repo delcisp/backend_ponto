@@ -26,6 +26,69 @@ blinkCounter = 0
 counter = 0
 lastRecognizedId = None
 cap = cv2.VideoCapture(0)
+if not cap.isOpened():
+    print("Erro ao acessar a câmera. Verifique se está conectada e nenhum outro aplicativo a está usando.")
+cap.set(3, 640)
+cap.set(4, 480)
+imgBackground = cv2.imread('Resources/background.png')
+def resource_path(relative_path):
+    base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
+    return os.path.join(base_path, relative_path)
+folderModePath = resource_path('Resources/Modes')
+modePathList = os.listdir(folderModePath)
+imgModeList = [cv2.imread(os.path.join(folderModePath, path)) for path in modePathList]
+idList = [22, 23, 24, 26, 110, 157, 158, 159, 160, 161, 130, 243]
+file_path = resource_path('encodeFile.p')
+file = open(file_path, 'rb')
+encodeListKnown = pickle.load(file)
+file.close()
+modeType = 1
+counter = 0
+point_id = -1
+imgEmployee = []
+today_date = datetime.now().strftime("%Y-%m-%d")
+last_recognized_time = {}
+def fetch_data(userId, result_queue):
+    global modeType
+    employeeInfo = db.reference(f'Employees/{userId}').get()
+    if employeeInfo:
+        print("aqui esta apenas informando a employeeInfo")
+        print(employeeInfo)
+        blob_path = f"Images/{userId}/image1.jpeg"  # Usando 'image1.jpeg' como exemplo
+        blob = bucket.get_blob(blob_path)
+        try:
+            if blob:
+                print("consegui carregar o blob!")
+                array = np.frombuffer(blob.download_as_string(), np.uint8)
+                imgEmployee = cv2.imdecode(array, cv2.IMREAD_COLOR)
+
+                if imgEmployee is None or not hasattr(imgEmployee, 'shape'):
+                    print("Erro na decodificacao")
+                    imgEmployee = None
+                datetimeObject = datetime.strptime(employeeInfo['last_attendance_time'], "%Y-%m-%d %H:%M:%S")
+                secondsElapsed = (datetime.now() - datetimeObject).total_seconds()
+                result_queue.put((datetimeObject, secondsElapsed, employeeInfo, imgEmployee))
+                print("se passaram: ", secondsElapsed, "segundos")
+            else:
+                print("Erro na porra do blobbloblbob")
+                imgEmployee = None
+        except Exception as e:
+            print(f"Erro ao manipular o blob: {e}")
+            imgEmployee = None
+    else:
+        print(f"Usuário {userId} não encontrado no banco de dados.")
+def identifyUser(encodeCurFrame, encodeListKnown, threshold=0.8):
+    best_match = None
+    highest_match_ratio = threshold
+    for encodeFace in encodeCurFrame:
+        for userId, userEncodings in encodeListKnown.items():
+            matches = face_recognition.compare_faces(userEncodings, encodeFace)
+            faceDis = face_recognition.face_distance(userEncodings, encodeFace)
+            match_ratio = np.sum(matches) / len(matches)
+            if match_ratio > highest_match_ratio:
+                highest_match_ratio = match_ratio
+                best_match = (userId, match_ratio, np.mean(faceDis))
+    return best_match
 def draw_button(image, button_text, button_pos, button_size, text_color=(255, 255, 255), button_color=(203, 100, 34)):
     x, y = button_pos
     w, h = button_size
