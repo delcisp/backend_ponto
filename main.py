@@ -49,7 +49,7 @@ imgEmployee = []
 today_date = datetime.now().strftime("%Y-%m-%d")
 last_recognized_time = {}
 def fetch_data(userId, result_queue):
-    global modeType
+    global modeType, imgEmployee
     employeeInfo = db.reference(f'Employees/{userId}').get()
     if employeeInfo:
         print("aqui esta apenas informando a employeeInfo")
@@ -99,8 +99,9 @@ def draw_button(image, button_text, button_pos, button_size, text_color=(255, 25
     text_y = y + (h + text_size[1]) // 2  # Centraliza o texto
     cv2.putText(image, button_text, (text_x, text_y), cv2.FONT_HERSHEY_SIMPLEX, 0.7, text_color, 2)
     return (x, y, x + w, y + h)
+
 def on_mouse_click(event, x, y, flags, params):
-    global start_recognition, confirm_clicked, ok_clicked, reload_clicked, desconhecido_clicked, modeType, imgBackground
+    global start_recognition, confirm_clicked, ok_clicked, reload_clicked,  desconhecido_clicked, modeType, imgBackground
 
     if event == cv2.EVENT_LBUTTONDOWN:
         if button_coords[0] <= x <= button_coords[2] and button_coords[1] <= y <= button_coords[3]:
@@ -123,14 +124,14 @@ confirm_button_coords = (0, 0, 0, 0)
 reload_button_coords = (0, 0, 0, 0)
 ok_button_coords = (0, 0, 0, 0)
 desconhecido_button_coords = (0, 0, 0, 0)
-
 start_recognition = False
 desconhecido_clicked = False
 confirm_clicked = False
 ok_clicked = False
 reload_clicked = False
-cv2.namedWindow("Face Attendence", cv2.WINDOW_NORMAL)
+cv2.namedWindow("Face Attendence")
 cv2.setMouseCallback("Face Attendence", on_mouse_click)
+cv2.EVENT_MOUSEMOVE
 while True:
     success, img = cap.read()
     if not success:
@@ -138,7 +139,6 @@ while True:
         break
     imgBackground = cv2.imread('Resources/background.png')
     button_coords = draw_button(imgBackground, "INICIAR", (890, 300), (250, 75))
-    cv2.imshow("Face Attendence", imgBackground)
     key = cv2.waitKey(1) & 0xFF
     if key == ord('q'):
         break
@@ -218,7 +218,10 @@ while True:
                                 cv2.imshow("Face Attendence", imgBackground)
                                 print("entrou no segundo secondsElapsed")
                                 employeeRef = db.reference(f'Employees/{userId}')
-                                new_datetime = datetimeObject + timedelta(seconds=1)
+                                today_date_obj = datetime.strptime(today_date, "%Y-%m-%d")
+                                new_datetime = datetime.now() + timedelta(seconds=1)
+                                if new_datetime.date() > today_date_obj.date():  # Agora compara as datas corretamente
+                                    today_date = new_datetime.strftime("%Y-%m-%d")
                                 total_attendance = new_datetime.strftime("%Y-%m-%d %H:%M:%S")
                                 employeeRef.update({'total_attendance': total_attendance, 'gone_in': datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
                                 dailyRecordRef = db.reference(f'Employees/{userId}/daily_records/{today_date}')
