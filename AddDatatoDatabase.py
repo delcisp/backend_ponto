@@ -2,9 +2,9 @@ import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import db
 
-cred = credentials.Certificate("accountKey.json")
+cred = credentials.Certificate("AccountKey.json")
 firebase_admin.initialize_app(cred, {
-    'databaseURL': "https://attendancesystem-cb9a3-default-rtdb.firebaseio.com/"
+    'databaseURL': "https://registro-ponto-junta-default-rtdb.firebaseio.com/",
 })
 
 ref = db.reference('Employees')

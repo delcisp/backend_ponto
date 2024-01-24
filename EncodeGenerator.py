@@ -5,11 +5,12 @@ import os
 import firebase_admin
 from firebase_admin import credentials
 
-cred = credentials.Certificate("accountKey.json")
+cred = credentials.Certificate("AccountKey.json")
 firebase_admin.initialize_app(cred, {
-    'databaseURL': "https://attendancesystem-cb9a3-default-rtdb.firebaseio.com/",
-    'storageBucket': "attendancesystem-cb9a3.appspot.com"
+    'databaseURL': "https://registro-ponto-junta-default-rtdb.firebaseio.com/",
+    'storageBucket': "registro-ponto-junta.appspot.com"
 })
+
 
 folderPath = 'Images'
 

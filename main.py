@@ -17,8 +17,8 @@ def resource_path(relative_path):
     return os.path.join(base_path, relative_path)
 cred = credentials.Certificate(resource_path('accountKey.json'))
 firebase_admin.initialize_app(cred, {
-    'databaseURL': "https://attendancesystem-cb9a3-default-rtdb.firebaseio.com/",
-    'storageBucket': "attendancesystem-cb9a3.appspot.com"
+    'databaseURL': "https://registro-ponto-junta-default-rtdb.firebaseio.com/",
+    'storageBucket': "registro-ponto-junta.appspot.com"
 })
 bucket = storage.bucket()
 detector = FaceMeshDetector(maxFaces=1)
