@@ -1,6 +1,7 @@
 import pickle
 import cv2
 import face_recognition
+from cv2 import WINDOW_NORMAL
 from cvzone.FaceMeshModule import FaceMeshDetector
 import numpy as np
 import firebase_admin
@@ -129,7 +130,7 @@ desconhecido_clicked = False
 confirm_clicked = False
 ok_clicked = False
 reload_clicked = False
-cv2.namedWindow("Face Attendence")
+cv2.namedWindow("Face Attendence", WINDOW_NORMAL)
 cv2.setMouseCallback("Face Attendence", on_mouse_click)
 cv2.EVENT_MOUSEMOVE
 while True:
