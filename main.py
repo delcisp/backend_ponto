@@ -55,7 +55,7 @@ def fetch_data(userId, result_queue):
     if employeeInfo:
         print("aqui esta apenas informando a employeeInfo")
         print(employeeInfo)
-        blob_path = f"Images/{userId}/image1.jpeg"  # Usando 'image1.jpeg' como exemplo
+        blob_path = f"Images/{userId}/image1.jpeg"
         blob = bucket.get_blob(blob_path)
         try:
             if blob:
@@ -130,8 +130,8 @@ desconhecido_clicked = False
 confirm_clicked = False
 ok_clicked = False
 reload_clicked = False
-cv2.namedWindow("Face Attendence", WINDOW_NORMAL)
-cv2.setMouseCallback("Face Attendence", on_mouse_click)
+cv2.namedWindow("Ponto Eletronico", WINDOW_NORMAL)
+cv2.setMouseCallback("Ponto Eletronico", on_mouse_click)
 cv2.EVENT_MOUSEMOVE
 while True:
     success, img = cap.read()
@@ -172,24 +172,23 @@ while True:
                         try:
                             print("ta indo colocar a imagem")
                             cv2.putText(imgBackground, str(employeeInfo['role']), (965, 555),
-                                    cv2.FONT_HERSHEY_COMPLEX, 0.5, (255, 255, 255), 1)
+                                    cv2.FONT_HERSHEY_COMPLEX, 0.6, (255, 255, 255), 1)
                             cv2.putText(imgBackground, str(employeeInfo['name']), (965, 493),
-                                    cv2.FONT_HERSHEY_COMPLEX, 0.5, (255, 255, 255), 1)
+                                    cv2.FONT_HERSHEY_COMPLEX, 0.6, (255, 255, 255), 1)
                             (w, h), _ = cv2.getTextSize(employeeInfo['name'], cv2.FONT_HERSHEY_COMPLEX, 1, 1)
                             offset = (414 - w) // 2
-                            cv2.putText(imgBackground, str(employeeInfo['name']), (808 + offset, 445),
-                                    cv2.FONT_HERSHEY_COMPLEX, 1, (50, 50, 50), 1)
                             imgBackground[175:175 + 216, 909:909 + 216] = imgEmployee
                             print("mana ja passou a imagem")
                             confirm_button_coords = draw_button(imgBackground, "CONFIRMAR", (1050, 600), (150, 50))
                             reload_button_coords = draw_button(imgBackground, "REINICIAR", (820, 600), (150, 50))
                         except (NameError, KeyError) as e:
                             print("Erro:", e)
-                            modeType = 4
+                            modeType = 1
                             print("sabe deus pq mas ta entrando aqui na e")
                     else:
+                        print("entrou no else q ta colocando o modeType errado")
                         modeType = 1
-                    cv2.imshow("Face Attendence", imgBackground)
+                    cv2.imshow("Ponto Eletronico", imgBackground)
                     while True:
                         key = cv2.waitKey(1) & 0xFF
                         if reload_clicked:
@@ -197,7 +196,7 @@ while True:
                             break
                         if confirm_clicked:
                             if secondsElapsed > 46000:
-                                cv2.imshow("Face Attendence", imgBackground)
+                                cv2.imshow("Ponto Eletronico", imgBackground)
                                 print("entrou no primeiro secondsElapsed")
                                 ref = db.reference(f'Employees/{userId}')
                                 entrance_time = current_time.strftime("%Y-%m-%d %H:%M:%S")
@@ -216,12 +215,12 @@ while True:
                                     ok_button_coords = (0, 0, 0, 0)
                                     break
                             elif secondsElapsed > 3600:
-                                cv2.imshow("Face Attendence", imgBackground)
+                                cv2.imshow("Ponto Eletronico", imgBackground)
                                 print("entrou no segundo secondsElapsed")
                                 employeeRef = db.reference(f'Employees/{userId}')
                                 today_date_obj = datetime.strptime(today_date, "%Y-%m-%d")
                                 new_datetime = datetime.now() + timedelta(seconds=1)
-                                if new_datetime.date() > today_date_obj.date():  # Agora compara as datas corretamente
+                                if new_datetime.date() > today_date_obj.date():
                                     today_date = new_datetime.strftime("%Y-%m-%d")
                                 total_attendance = new_datetime.strftime("%Y-%m-%d %H:%M:%S")
                                 employeeRef.update({'total_attendance': total_attendance, 'gone_in': datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
@@ -239,7 +238,7 @@ while True:
                                     ok_button_coords = (0, 0, 0, 0)
                                     break
                             else:
-                                cv2.imshow("Face Attendence", imgBackground)
+                                cv2.imshow("Ponto Eletronico", imgBackground)
                                 employeeRef = db.reference(f'Employees/{userId}')
                                 new_datetime = datetimeObject + timedelta(seconds=1)
                                 imgBackground[44:44 + 634, 808:808 + 414] = imgModeList[modeType]
@@ -267,14 +266,14 @@ while True:
                 modeType = 5
                 imgBackground[44:44 + 634, 808:808 + 414] = imgModeList[modeType]
                 desconhecido_button_coords = draw_button(imgBackground, "VOLTAR", (920, 600), (200, 50))
-                cv2.imshow("Face Attendence", imgBackground)
+                cv2.imshow("Ponto Eletronico", imgBackground)
                 print("terminouuu mas nao mudou o modeType para 5")
                 while True:
                     key = cv2.waitKey(1) & 0xFF
                     if key == ord('q'):
                         break
                     if desconhecido_clicked:
-                        print("botao clicado")
+                        print("ENTROUUUUU")
                         start_recognition = False
                         confirm_clicked = False
                         ok_clicked = False
@@ -284,7 +283,7 @@ while True:
                         break
                     continue
     else:
-        cv2.imshow("Face Attendence", imgBackground)
+        cv2.imshow("Ponto Eletronico", imgBackground)
     key = cv2.waitKey(1) & 0xFF
     if key == ord('q'):
         break

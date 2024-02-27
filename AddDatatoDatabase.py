@@ -52,7 +52,7 @@ data = {
     },
     "000025": {
         "name": "Abelardo Passos",
-        "role": "Síndico",
+        "role": "Sindico",
         "orgao": "SEAD",
         "last_attendance_time": "2024-01-21 09:15:20",
         "gone_in": "2024-01-21 17:45:00",
@@ -77,8 +77,8 @@ data = {
         }
     },
     "3301": {
-        "name": "Joseph Pereira dos Santos",
-        "role": "Estagiário",
+        "name": "Joseph Pereira",
+        "role": "Estagiario",
         "orgao": "SEAD",
         "last_attendance_time": "2024-01-21 09:15:20",
         "gone_in": "2024-01-21 17:45:00",
@@ -90,8 +90,8 @@ data = {
         }
     },
     "3302": {
-        "name": "Alessandra da Rocha Costa",
-        "role": "Aux. Serviços Gerais",
+        "name": "Alessandra Rocha",
+        "role": "Aux. Servicos Gerais",
         "orgao": "SEAD",
         "last_attendance_time": "2024-01-21 09:15:20",
         "gone_in": "2024-01-21 17:45:00",
@@ -103,7 +103,7 @@ data = {
         }
     },
     "3303": {
-        "name": "Bianca Sandrini Lima Pereira",
+        "name": "Bianca Sandrini",
         "role": "Assessor III",
         "orgao": "SEAD",
         "last_attendance_time": "2024-01-21 09:15:20",
@@ -116,7 +116,7 @@ data = {
         }
     },
     "3304": {
-        "name": "Geraldina Pereira Pontes Goes",
+        "name": "Geraldina Goes",
         "role": "Aux. Servicos Gerais",
         "orgao": "SEAD",
         "last_attendance_time": "2024-01-21 09:15:20",
@@ -129,8 +129,8 @@ data = {
         }
     },
     "3305": {
-        "name": "Arquimedes Carvalho Lamar",
-        "role": "Assistente Técnico",
+        "name": "Arquimedes Lamar",
+        "role": "Assistente Tecnico",
         "orgao": "SEAD",
         "last_attendance_time": "2024-01-21 09:15:20",
         "gone_in": "2024-01-21 17:45:00",
@@ -142,7 +142,7 @@ data = {
         }
     },
     "3306": {
-        "name": "Eliane Percila de Oliveira Nery",
+        "name": "Eliane Nery",
         "role": "Agente Administrativo",
         "orgao": "SEAD",
         "last_attendance_time": "2024-01-21 09:15:20",
@@ -155,8 +155,8 @@ data = {
         }
     },
     "3307": {
-        "name": "Maria do Perpetuo Socorro L. Barros",
-        "role": "Aux. Serviços Gerais",
+        "name": "Maria Barros",
+        "role": "Aux. Servicos Gerais",
         "orgao": "SEAD",
         "last_attendance_time": "2024-01-21 09:15:20",
         "gone_in": "2024-01-21 17:45:00",
@@ -168,8 +168,8 @@ data = {
         }
     },
     "3308": {
-        "name": "Lenita Bentes de Magalhaes",
-        "role": "Assistente Técnico",
+        "name": "Lenita Magalhaes",
+        "role": "Assistente Tecnico",
         "orgao": "SEAD",
         "last_attendance_time": "2024-01-21 09:15:20",
         "gone_in": "2024-01-21 17:45:00",
@@ -181,7 +181,7 @@ data = {
         }
     },
     "3309": {
-        "name": "André Luiz Melo Barbosa",
+        "name": "Andre Luiz Barbosa",
         "role": "Agente administrativo",
         "orgao": "SEAD",
         "last_attendance_time": "2024-01-21 09:15:20",
@@ -194,8 +194,8 @@ data = {
         }
     },
     "3310": {
-        "name": "Raimunda Correa da Silva",
-        "role": "Aux. Serviços Gerais",
+        "name": "Raimunda Silva",
+        "role": "Aux. Servicos Gerais",
         "orgao": "SEAD",
         "last_attendance_time": "2024-01-21 09:15:20",
         "gone_in": "2024-01-21 17:45:00",
@@ -207,7 +207,7 @@ data = {
         }
     },
     "3311": {
-        "name": "Sebastiao Filho F. da Silva",
+        "name": "Sebastiao Silva",
         "role": "Marinheiro Fluvial",
         "orgao": "SEAD",
         "last_attendance_time": "2024-01-21 09:15:20",
@@ -220,21 +220,8 @@ data = {
         }
     },
     "3313": {
-        "name": "Maria Dolores Silva Araújo",
-        "role": "Assistente Técnico",
-        "orgao": "SEAD",
-        "last_attendance_time": "2024-01-21 09:15:20",
-        "gone_in": "2024-01-21 17:45:00",
-        "daily_records": {
-            "2024-01-21": {
-                "entrance": "2024-01-21 09:15:20",
-                "exit": "2024-01-21 17:45:00"
-            }
-        }
-    },
-    "3314": {
-        "name": "Heládia Maria Araújo dos Santos",
-        "role": "Telefonista",
+        "name": "Maria Dolores Araujo",
+        "role": "Assistente Tecnico",
         "orgao": "SEAD",
         "last_attendance_time": "2024-01-21 09:15:20",
         "gone_in": "2024-01-21 17:45:00",
@@ -246,7 +233,7 @@ data = {
         }
     },
     "3315": {
-        "name": "Jackson Veiga Frota",
+        "name": "Jackson Frota",
         "role": "Vigia",
         "orgao": "SEAD",
         "last_attendance_time": "2024-01-21 09:15:20",
@@ -259,8 +246,8 @@ data = {
         }
     },
     "3316": {
-        "name": "Emerson Lins de Lima",
-        "role": "Fiscal Rodoviário",
+        "name": "Emerson Lima",
+        "role": "Fiscal Rodoviario",
         "orgao": "SEAD",
         "last_attendance_time": "2024-01-21 09:15:20",
         "gone_in": "2024-01-21 17:45:00",
@@ -272,8 +259,8 @@ data = {
         }
     },
     "3317": {
-        "name": "Marindia Guerro Dutra",
-        "role": "Médica",
+        "name": "Marindia Dutra",
+        "role": "Medica",
         "orgao": "SES",
         "last_attendance_time": "2024-01-21 09:15:20",
         "gone_in": "2024-01-21 17:45:00",
@@ -285,8 +272,8 @@ data = {
         }
     },
     "3318": {
-        "name": "Allyne Kelly Menezes Batista",
-        "role": "Médica",
+        "name": "Allyne Batista",
+        "role": "Medica",
         "orgao": "SES",
         "last_attendance_time": "2024-01-21 09:15:20",
         "gone_in": "2024-01-21 17:45:00",
@@ -298,8 +285,8 @@ data = {
         }
     },
     "3319": {
-        "name": "Sandra Maria Kanawatti Lasmar",
-        "role": "Médica",
+        "name": "Sandra Lasmar",
+        "role": "Medica",
         "orgao": "SES",
         "last_attendance_time": "2024-01-21 09:15:20",
         "gone_in": "2024-01-21 17:45:00",
@@ -311,8 +298,8 @@ data = {
         }
     },
     "3320": {
-        "name": "Nilufar Zeimarani Nurani",
-        "role": "Médica",
+        "name": "Nilufar Nurani",
+        "role": "Medica",
         "orgao": "SES",
         "last_attendance_time": "2024-01-21 09:15:20",
         "gone_in": "2024-01-21 17:45:00",
@@ -324,8 +311,8 @@ data = {
         }
     },
     "3321": {
-        "name": "Mario Jorge Quadros",
-        "role": "Médico",
+        "name": "Mario Quadros",
+        "role": "Medico",
         "orgao": "SES",
         "last_attendance_time": "2024-01-21 09:15:20",
         "gone_in": "2024-01-21 17:45:00",
@@ -337,8 +324,8 @@ data = {
         }
     },
     "3322": {
-        "name": "Neane Magalhaes de Andrade",
-        "role": "Médica",
+        "name": "Neane Andrade",
+        "role": "Medica",
         "orgao": "SES",
         "last_attendance_time": "2024-01-21 09:15:20",
         "gone_in": "2024-01-21 17:45:00",
@@ -350,7 +337,7 @@ data = {
         }
     },
     "3323": {
-        "name": "Vicente de Paulo V. Colombo",
+        "name": "Vicente Colombo",
         "role": "Marinheiro Fluvial",
         "orgao": "SEAD",
         "last_attendance_time": "2024-01-21 09:15:20",
@@ -363,7 +350,7 @@ data = {
         }
     },
     "3324": {
-        "name": "Natasha Lima da Silva Neves",
+        "name": "Natasha Neves",
         "role": "Médica",
         "orgao": "SES",
         "last_attendance_time": "2024-01-21 09:15:20",
