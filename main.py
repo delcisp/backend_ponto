@@ -53,13 +53,12 @@ def fetch_data(userId, result_queue):
     global modeType, imgEmployee
     employeeInfo = db.reference(f'Employees/{userId}').get()
     if employeeInfo:
-        print("aqui esta apenas informando a employeeInfo")
-        print(employeeInfo)
+
         blob_path = f"Images/{userId}/image1.jpeg"
         blob = bucket.get_blob(blob_path)
         try:
             if blob:
-                print("consegui carregar o blob!")
+
                 array = np.frombuffer(blob.download_as_string(), np.uint8)
                 imgEmployee = cv2.imdecode(array, cv2.IMREAD_COLOR)
 
@@ -69,16 +68,16 @@ def fetch_data(userId, result_queue):
                 datetimeObject = datetime.strptime(employeeInfo['last_attendance_time'], "%Y-%m-%d %H:%M:%S")
                 secondsElapsed = (datetime.now() - datetimeObject).total_seconds()
                 result_queue.put((datetimeObject, secondsElapsed, employeeInfo, imgEmployee))
-                print("se passaram: ", secondsElapsed, "segundos")
+
             else:
-                print("Erro na porra do blobbloblbob")
+                print("Erro de blob.")
                 imgEmployee = None
         except Exception as e:
             print(f"Erro ao manipular o blob: {e}")
             imgEmployee = None
     else:
         print(f"Usuário {userId} não encontrado no banco de dados.")
-def identifyUser(encodeCurFrame, encodeListKnown, threshold=0.8):
+def identifyUser(encodeCurFrame, encodeListKnown, threshold=0.9):
     best_match = None
     highest_match_ratio = threshold
     for encodeFace in encodeCurFrame:
@@ -106,20 +105,15 @@ def on_mouse_click(event, x, y, flags, params):
 
     if event == cv2.EVENT_LBUTTONDOWN:
         if button_coords[0] <= x <= button_coords[2] and button_coords[1] <= y <= button_coords[3]:
-            print("Botão Iniciar clicado!")
             start_recognition = True
         elif ok_button_coords[0] <= x <= ok_button_coords[2] and ok_button_coords[1] <= y <= ok_button_coords[3]:
             ok_clicked = True
-            print("Botão OK clicado!")
         elif confirm_button_coords[0] <= x <= confirm_button_coords[2] and confirm_button_coords[1] <= y <= confirm_button_coords[3]:
             confirm_clicked = True
-            print("Botão Confirmar clicado!")
         elif 'reload_button_coords' in globals() and reload_button_coords[0] <= x <= reload_button_coords[2] and reload_button_coords[1] <= y <= reload_button_coords[3]:
             reload_clicked = True
-            print("Botão Reload clicado!")
         elif 'desconhecido_button_coords' in globals() and desconhecido_button_coords[0] <= x <= desconhecido_button_coords[2] and desconhecido_button_coords[1] <= y <= desconhecido_button_coords[3]:
             desconhecido_clicked = True
-            print("Botão Desconhecido clicado!")
 
 confirm_button_coords = (0, 0, 0, 0)
 reload_button_coords = (0, 0, 0, 0)
@@ -144,7 +138,6 @@ while True:
     if key == ord('q'):
         break
     if start_recognition:
-        print("Iniciando reconhecimento facial...")
         result_queue = Queue()
         success, img = cap.read()
         img, faces = detector.findFaceMesh(img, draw=False)
@@ -161,7 +154,6 @@ while True:
             if bestMatch:
                 userId, matchRatio, avgDistance = bestMatch
                 if userId not in last_recognized_time or (datetime.now() - last_recognized_time[userId]).total_seconds() > 4:
-                    print(f"Reconhecido: {userId} com precisão de {matchRatio} e distância média de {avgDistance}")
                     last_recognized_time[userId] = datetime.now()
                     current_time = datetime.now()
                     data_thread = threading.Thread(target=fetch_data, args=(userId, result_queue))
@@ -170,34 +162,28 @@ while True:
                     datetimeObject, secondsElapsed, employeeInfo, imgEmployee = result_queue.get()
                     if counter <= 10:
                         try:
-                            print("ta indo colocar a imagem")
-                            cv2.putText(imgBackground, str(employeeInfo['role']), (965, 555),
-                                    cv2.FONT_HERSHEY_COMPLEX, 0.6, (255, 255, 255), 1)
-                            cv2.putText(imgBackground, str(employeeInfo['name']), (965, 493),
-                                    cv2.FONT_HERSHEY_COMPLEX, 0.6, (255, 255, 255), 1)
-                            (w, h), _ = cv2.getTextSize(employeeInfo['name'], cv2.FONT_HERSHEY_COMPLEX, 1, 1)
+                            cv2.putText(imgBackground, str(employeeInfo['role']), (956, 558),
+                                    cv2.FONT_HERSHEY_TRIPLEX, 0.6, (255, 255, 255), 1)
+                            cv2.putText(imgBackground, str(employeeInfo['name']), (956, 495),
+                                    cv2.FONT_HERSHEY_TRIPLEX, 0.6, (255, 255, 255), 1)
+                            (w, h), _ = cv2.getTextSize(employeeInfo['name'], cv2.FONT_HERSHEY_TRIPLEX, 1, 1)
                             offset = (414 - w) // 2
                             imgBackground[175:175 + 216, 909:909 + 216] = imgEmployee
-                            print("mana ja passou a imagem")
                             confirm_button_coords = draw_button(imgBackground, "CONFIRMAR", (1050, 600), (150, 50))
                             reload_button_coords = draw_button(imgBackground, "REINICIAR", (820, 600), (150, 50))
                         except (NameError, KeyError) as e:
                             print("Erro:", e)
                             modeType = 1
-                            print("sabe deus pq mas ta entrando aqui na e")
                     else:
-                        print("entrou no else q ta colocando o modeType errado")
                         modeType = 1
                     cv2.imshow("Ponto Eletronico", imgBackground)
                     while True:
                         key = cv2.waitKey(1) & 0xFF
                         if reload_clicked:
-                            print("ate aqui nos ajudou o senhor")
                             break
                         if confirm_clicked:
                             if secondsElapsed > 46000:
                                 cv2.imshow("Ponto Eletronico", imgBackground)
-                                print("entrou no primeiro secondsElapsed")
                                 ref = db.reference(f'Employees/{userId}')
                                 entrance_time = current_time.strftime("%Y-%m-%d %H:%M:%S")
                                 db.reference(f'/Employees/{userId}/daily_records/{today_date}/entrance').set(entrance_time)
@@ -209,14 +195,12 @@ while True:
                                 modeType = 2
                                 ok_button_coords = draw_button(imgBackground, "OK", (920, 600), (200, 50))
                                 if ok_clicked:
-                                    print("entrou no if do ok_button_coords mas nao apareceu o modeType")
                                     modeType = 1
                                     ok_clicked = False
                                     ok_button_coords = (0, 0, 0, 0)
                                     break
                             elif secondsElapsed > 3600:
                                 cv2.imshow("Ponto Eletronico", imgBackground)
-                                print("entrou no segundo secondsElapsed")
                                 employeeRef = db.reference(f'Employees/{userId}')
                                 today_date_obj = datetime.strptime(today_date, "%Y-%m-%d")
                                 new_datetime = datetime.now() + timedelta(seconds=1)
@@ -227,12 +211,10 @@ while True:
                                 dailyRecordRef = db.reference(f'Employees/{userId}/daily_records/{today_date}')
                                 exit_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                                 dailyRecordRef.update({'exit': exit_time})
-                                print("Registro de saída adicionado para hoje.")
                                 imgBackground[44:44 + 634, 808:808 + 414] = imgModeList[modeType]
                                 modeType = 4
                                 ok_button_coords = draw_button(imgBackground, "OK", (920, 600), (200, 50))
                                 if ok_clicked:
-                                    print("entrou no if do ok_button_coords mas nao apareceu o modeType")
                                     modeType = 1
                                     ok_clicked = False
                                     ok_button_coords = (0, 0, 0, 0)
@@ -243,10 +225,8 @@ while True:
                                 new_datetime = datetimeObject + timedelta(seconds=1)
                                 imgBackground[44:44 + 634, 808:808 + 414] = imgModeList[modeType]
                                 modeType = 3
-                                print("entrou no else das condicoes de secondsElapsed")
                                 ok_button_coords = draw_button(imgBackground, "OK", (920, 600), (200, 50))
                                 if ok_clicked:
-                                    print("entrou no if do ok_button_coords")
                                     modeType = 1
                                     ok_clicked = False
                                     ok_button_coords = (0, 0, 0, 0)
@@ -256,24 +236,20 @@ while True:
                     ok_clicked = False
                     reload_clicked = False
                     desconhecido_clicked = False
-            ##ESSE TRECHO DO ELSE DE BEST MATCH TA DANDO ERRO AO TENTAR RODAR VARIAS VEZES O SISTEMA!!!
             else:
                 confirm_button_coords = (0, 0, 0, 0)
                 reload_button_coords = (0, 0, 0, 0)
                 ok_button_coords = (0, 0, 0, 0)
                 start_recognition = False
-                print("finalmente entrou nessa merda")
                 modeType = 5
                 imgBackground[44:44 + 634, 808:808 + 414] = imgModeList[modeType]
                 desconhecido_button_coords = draw_button(imgBackground, "VOLTAR", (920, 600), (200, 50))
                 cv2.imshow("Ponto Eletronico", imgBackground)
-                print("terminouuu mas nao mudou o modeType para 5")
                 while True:
                     key = cv2.waitKey(1) & 0xFF
                     if key == ord('q'):
                         break
                     if desconhecido_clicked:
-                        print("ENTROUUUUU")
                         start_recognition = False
                         confirm_clicked = False
                         ok_clicked = False
